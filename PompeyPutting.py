@@ -247,4 +247,5 @@ def main():
     print("Final total:", total_strokes)
     win.close()
 
-main()
+if __name__ == "__main__":
+    main()
