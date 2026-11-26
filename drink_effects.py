@@ -1,25 +1,12 @@
-"""
-drink_effects.py
-Turns the drinks chosen at the bar into modifiers for Pompey Putting:
-ball size / shape / colour, speed, friction, curve, aiming arrow
-behaviour and hole behaviour.
-
-Drinks stack, so ordering several gives a combination of effects.
-"""
-
 import math
 import random
 from graphix import Oval, Circle, Point, Text
 
-GREEN = "forest green"            # colour of the putting green
+GREEN = "forest green"
 
-# How strongly the "curve" and "wobble" numbers turn the ball (radians per
-# frame per unit).  Turning the velocity (rather than adding to it) means a
-# drink can never make the ball speed up, so every roll still comes to a stop.
 CURVE_TURN = 0.08
 WOBBLE_TURN = 0.12
 
-# All 16 drinks from bar.py mapped to unique, stackable modifiers
 DRINK_EFFECTS = {
     "Lager": {
         "description": "Heavy Pints: Ball grows bigger and rolls slower.",
@@ -64,13 +51,14 @@ DRINK_EFFECTS = {
         "description": "Clear Vision: The hole turns invisible (same colour as the green)!",
         "hole_invisible": True,
     },
+    "Vodka and coke": {
+        "description": "Loose Grip: The ball rolls slower and wobbles slightly.",
+        "speed_mult": 0.9,
+        "wobble": 0.2,
+    },
     "Rum and cola": {
         "description": "Pirate Drift: Hole slowly patrols up and down the green.",
         "hole_move": "patrol",
-    },
-    "Whisky": {
-        "description": "Double Vision: Aiming arrow swings back and forth like a pendulum.",
-        "arrow_mode": "pendulum",
     },
     "Red wine": {
         "description": "Smooth Arc: Deep, sweeping curve to the right.",
@@ -90,10 +78,6 @@ DRINK_EFFECTS = {
         "description": "Blackout Teleport: Hole jumps to a random spot after every shot!",
         "hole_move": "teleport",
     },
-    "Lime and soda": {
-        "description": "Sober Up: Clears all active drink effects!",
-        "clear_all": True,
-    },
 }
 
 
@@ -102,7 +86,7 @@ DRINK_EFFECTS = {
 # ---------------------------------------------------------------------------
 
 def _sober_state():
-    """The effects dictionary with no drinks active."""
+#The effects dictionary with no drinks active
     return {
         "active_drinks": [],
         "descriptions": [],
@@ -123,18 +107,12 @@ def _sober_state():
 
 
 def parse_drinks(chosen_drinks):
-    """
-    Takes a single drink string, a comma-separated string, or a list of drinks
-    chosen at the bar and combines them into a single effects dictionary.
-    Unknown drink names are ignored.  Passing [] gives the sober defaults.
-    """
+#Combine selected drink names into one effects dictionary.
     if isinstance(chosen_drinks, str):
-        # Supports "Hooch" or "Hooch, Whisky"
         drink_list = [d.strip() for d in chosen_drinks.split(",") if d.strip()]
     else:
         drink_list = list(chosen_drinks)
 
-    # Lookup map for case-insensitive matching
     lookup = {name.lower(): name for name in DRINK_EFFECTS}
 
     state = _sober_state()
@@ -147,7 +125,6 @@ def parse_drinks(chosen_drinks):
         effect = DRINK_EFFECTS[canonical]
 
         if effect.get("clear_all"):
-            # Reset everything back to sober defaults
             state = _sober_state()
             state["active_drinks"].append(canonical)
             state["descriptions"].append(effect["description"])
@@ -177,7 +154,6 @@ def parse_drinks(chosen_drinks):
         if effect.get("hole_move"):
             state["hole_move"] = effect["hole_move"]
 
-    # Clamp extreme stacking values so the game stays playable
     state["ball_radius_mult"] = max(0.4, min(2.5, state["ball_radius_mult"]))
     state["speed_mult"] = max(0.4, min(2.2, state["speed_mult"]))
     state["wall_bounce"] = max(0.5, min(1.5, state["wall_bounce"]))
@@ -189,7 +165,7 @@ def parse_drinks(chosen_drinks):
 
 
 def format_drink_list(names, max_chars=None):
-    """'Lager, Lager, Stout' -> 'Lager x2, Stout' (shortened with ... if needed)."""
+#Compress repeated names and optionally limit the length.
     counts = {}
     for name in names:
         counts[name] = counts.get(name, 0) + 1
@@ -205,11 +181,7 @@ def format_drink_list(names, max_chars=None):
 # ---------------------------------------------------------------------------
 
 class LemonBall:
-    """
-    Wrapper mimicking graphix.Circle so Game.py's ball.get_centre(),
-    ball.move(dx, dy), ball.undraw() and ball.radius work seamlessly
-    when Hooch turns the ball into an oval lemon with tips.
-    """
+#Ball wrapper used when Hooch turns the ball into a lemon.
     def __init__(self, centre, radius, win, colour="gold"):
         self.radius = radius
         self._centre = Point(centre.x, centre.y)
@@ -223,7 +195,6 @@ class LemonBall:
         self.body.fill_colour = colour
         self.body.outline_colour = "goldenrod"
 
-        # Little lemon nubs on left and right ends
         nub_r = max(2, radius // 4)
         self.left_nub = Circle(Point(centre.x - rx, centre.y), nub_r)
         self.left_nub.fill_colour = colour
@@ -251,7 +222,7 @@ class LemonBall:
 
 
 def create_modified_ball(point, win, shapelist, effects, base_radius=10):
-    """Draws either a standard/resized Circle or a LemonBall for Hooch."""
+#Draw the ball with its current drink effects.
     radius = max(4, round(base_radius * effects["ball_radius_mult"]))
     if effects["ball_shape"] == "lemon":
         ball = LemonBall(point, radius, win, "gold")      # a lemon is always yellow
@@ -268,7 +239,7 @@ def create_modified_ball(point, win, shapelist, effects, base_radius=10):
 # ---------------------------------------------------------------------------
 
 def apply_hole_effects(hole, effects):
-    """Vodka lemonade: colour the hole the same as the green."""
+#Vodka lemonade: colour the hole the same as the green.
     if effects["hole_invisible"]:
         hole.fill_colour = GREEN
         hole.outline_colour = GREEN
@@ -282,11 +253,7 @@ def _distance_to_rect(px, py, rect):
 
 
 def teleport_hole(hole, effects, walls, ball, bounds=(100, 150, 700, 450)):
-    """
-    Tequila shot: jump the hole to a random spot.  The spot is chosen so the
-    ball can actually reach it: clear of every wall by at least the ball's
-    radius, and not on top of the ball.
-    """
+#Move the hole to a random clear spot.
     if effects["hole_move"] != "teleport":
         return
 
@@ -305,14 +272,10 @@ def teleport_hole(hole, effects, walls, ball, bounds=(100, 150, 700, 450)):
         cur = hole.get_centre()
         hole.move(x - cur.x, y - cur.y)
         return
-    # no valid spot found (very unlikely): leave the hole where it is
 
 
 def update_moving_hole(hole, effects, clock, home_y, bounds=(100, 150, 700, 450)):
-    """
-    Rum and cola: the hole glides up and down around its starting height
-    (home_y).  `clock` is a frame counter that keeps counting up.
-    """
+#Move the hole up and down around its starting position.
     if effects["hole_move"] != "patrol":
         return
 
@@ -332,11 +295,7 @@ def update_moving_hole(hole, effects, clock, home_y, bounds=(100, 150, 700, 450)
 # ---------------------------------------------------------------------------
 
 def step_aim_angle(angle, frame, base_spin_speed, effects, centre=0):
-    """
-    Next aiming arrow angle (degrees).  `frame` counts frames since aiming
-    began.  `centre` is the angle a Whisky pendulum swings around (Game.py
-    passes the direction of the hole, so the whole green stays reachable).
-    """
+#Return the next angle for the aiming arrow.
     mode = effects["arrow_mode"]
     speed = base_spin_speed * effects["arrow_speed_mult"]
 
@@ -344,18 +303,13 @@ def step_aim_angle(angle, frame, base_spin_speed, effects, centre=0):
         # Cider: erratic twitchy jumps
         return (angle + speed + random.uniform(-6.5, 6.5)) % 360
     elif mode == "pendulum":
-        # Whisky: swings back and forth like a drunken pendulum
         return (centre + 110 * math.sin(frame * 0.02 * speed)) % 360
     else:
         return (angle + speed) % 360
 
 
 def apply_roll_physics(dx, dy, frame, effects):
-    """
-    Turns the velocity (dx, dy) a little each frame for curve (Bitter / Red
-    wine), wobble (Shandy) and Hooch's lopsided lemon.  The speed is only
-    changed by the lemon's small surges, so the ball always slows down.
-    """
+#Apply curve, wobble, and lemon movement to the ball velocity.
     speed = math.hypot(dx, dy)
     if speed == 0:
         return dx, dy
@@ -381,7 +335,7 @@ def apply_roll_physics(dx, dy, frame, effects):
 # ---------------------------------------------------------------------------
 
 def draw_active_drinks_hud(win, shapelist, effects):
-    """Displays the active drinks at the top of the game window."""
+#Displays the active drinks at the top of the game window.
     if not effects["active_drinks"]:
         label_text = "Drinks: Sober"
     else:

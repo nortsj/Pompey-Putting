@@ -1,23 +1,20 @@
-"""
-Runtime.py - run this file to play.
-Menu -> Bar (choose drinks) -> Game (played with those drink effects).
-Keep graphix.py in the same folder.
-"""
-
 from graphix import GraphixError
 from Menu import main_menu
-from bar import bartender
 from Game import main as game_main
+
+
+def visit_bar():
+    from bar import bartender
+    return bartender()
 
 
 def run():
     try:
-        main_menu()
-        effects = bartender()
-        game_main(effects)
+        while True:
+            main_menu()
+            game_main(bar_callback=visit_bar)
     except GraphixError:
-        # a window was closed with its X button: just stop quietly
-        pass
+        return
 
 
 if __name__ == "__main__":

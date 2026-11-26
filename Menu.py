@@ -1,7 +1,3 @@
-"""
-Menu.py - the title screen.  main_menu() returns when PLAY is clicked.
-"""
-
 from graphix import Window, Circle, Line, Rectangle, Text, Point
 
 #Main
