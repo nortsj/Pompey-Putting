@@ -1,4 +1,5 @@
 from graphix import *
+import random
 
 drinks = [
     "Lager",
@@ -8,23 +9,99 @@ drinks = [
     "Cider",
     "Shandy",
     "Hooch",
-    "Gin and tonic",
+    "Gin + tonic",
     "Vodka lemonade",
-    "Rum and cola",
-    "Whisky",
+    "Rum + cola",
+    "Vodka + coke",
     "Red wine",
     "White wine",
     "Prosecco",
-    "Tequila shot",
-    "Lime and soda"
+    "Tequila shot"
 ]
 
 def bartender():
-    choice=str(input("Can I interest you?"))
-    if choice in drinks:
-        print("coming right up")
-    else:
-        print("we don't have that bud")
+#Three random drink choices and return the selected drinks
+    choices = random.sample(drinks, 3)
+
+    prompt_box = Rectangle(Point(245, 10), Point(555, 60))
+    prompt_box.fill_colour = "#444444"
+    prompt_box.outline_colour = "#B8B8B8"
+    prompt_box.outline_width = 2
+    prompt_box.draw(Bar)
+
+    prompt = Text(Point(400, 35), "Can I get you anything?")
+    prompt.typeface = "courier"
+    prompt.size = 16
+    prompt.style = "bold"
+    prompt.text_colour = "white"
+    prompt.draw(Bar)
+
+    option_centres = [265, 400, 535]
+
+#Dark rubber bar mat for all three drink choices
+    drink_mat = Rectangle(Point(195, 525), Point(605, 590))
+    drink_mat.fill_colour = "#484848"
+    drink_mat.outline_colour = "#333333"
+    drink_mat.outline_width = 3
+    drink_mat.draw(Bar)
+
+    labels = []
+    for x, drink in zip(option_centres, choices):
+        label = Text(Point(x, 560), drink)
+        label.typeface = "courier"
+        label.size = 12
+        label.style = "bold"
+        label.text_colour = "#F4F0EC"
+        label.draw(Bar)
+        labels.append(label)
+
+    confirm_button = Rectangle(Point(330, 480), Point(470, 515))
+    confirm_button.fill_colour = "#484848"
+    confirm_button.outline_colour = "#777777"
+    confirm_button.outline_width = 2
+    confirm_button.draw(Bar)
+
+    confirm_text = Text(Point(400, 498), "CONFIRM")
+    confirm_text.typeface = "courier"
+    confirm_text.size = 12
+    confirm_text.style = "bold"
+    confirm_text.text_colour = "#888888"
+    confirm_text.draw(Bar)
+
+    selected = set()
+    while True:
+        click = Bar.get_mouse()
+
+        if 330 <= click.x <= 470 and 480 <= click.y <= 515:
+            if selected:
+                selected_drinks = [choices[index] for index in sorted(selected)]
+                print("Coming right up: " + ", ".join(selected_drinks))
+                return selected_drinks
+            continue
+
+        if 525 <= click.y <= 590:
+            if 195 <= click.x < 333:
+                index = 0
+            elif 333 <= click.x < 467:
+                index = 1
+            elif 467 <= click.x <= 605:
+                index = 2
+            else:
+                continue
+
+            if index in selected:
+                selected.remove(index)
+                labels[index].text_colour = "#F4F0EC"
+            else:
+                selected.add(index)
+                labels[index].text_colour = "#FFD166"
+
+            if selected:
+                confirm_text.text_colour = "#FFD166"
+                confirm_button.outline_colour = "#D9B56D"
+            else:
+                confirm_text.text_colour = "#888888"
+                confirm_button.outline_colour = "#777777"
 
 
 #Bar window and colours
@@ -47,6 +124,20 @@ counter_edge = Line(Point(0, 460), Point(800, 460))
 counter_edge.fill_colour = "#70412F"
 counter_edge.outline_width = 3
 counter_edge.draw(Bar)
+
+#Wood grain along the counter
+for x1, y1, x2, y2, colour in [
+    (25, 495, 170, 495, "#AA6A4D"),
+    (620, 495, 775, 495, "#AA6A4D"),
+    (18, 515, 125, 515, "#7F4935"),
+    (675, 518, 782, 518, "#7F4935"),
+    (28, 592, 190, 592, "#AA6A4D"),
+    (610, 590, 775, 590, "#AA6A4D"),
+]:
+    grain = Line(Point(x1, y1), Point(x2, y2))
+    grain.fill_colour = colour
+    grain.outline_width = 2
+    grain.draw(Bar)
 
 #Sleeves
 left_sleeve = Polygon([
@@ -78,6 +169,31 @@ body = Polygon([
 body.fill_colour = torso
 body.outline_colour = torso
 body.draw(Bar)
+
+#Jacket shading and sleeve creases add a little depth
+left_jacket_shadow = Polygon([
+    Point(300, 45), Point(318, 55), Point(328, 450), Point(280, 460)
+])
+left_jacket_shadow.fill_colour = "#29377F"
+left_jacket_shadow.outline_colour = "#29377F"
+left_jacket_shadow.draw(Bar)
+
+right_jacket_shadow = Polygon([
+    Point(500, 45), Point(520, 35), Point(520, 460), Point(474, 450)
+])
+right_jacket_shadow.fill_colour = "#394B9B"
+right_jacket_shadow.outline_colour = "#394B9B"
+right_jacket_shadow.draw(Bar)
+
+left_sleeve_crease = Line(Point(263, 300), Point(242, 365))
+left_sleeve_crease.fill_colour = "#D8D2CC"
+left_sleeve_crease.outline_width = 2
+left_sleeve_crease.draw(Bar)
+
+right_sleeve_crease = Line(Point(537, 300), Point(558, 365))
+right_sleeve_crease.fill_colour = "#D8D2CC"
+right_sleeve_crease.outline_width = 2
+right_sleeve_crease.draw(Bar)
 
 #White shirt
 undershirt = Polygon([
@@ -120,6 +236,18 @@ tie = Polygon([
 tie.fill_colour = "#A00030"
 tie.outline_colour = "#A00030"
 tie.draw(Bar)
+
+tie_highlight = Line(Point(396, 55), Point(398, 205))
+tie_highlight.fill_colour = "#C34A61"
+tie_highlight.outline_width = 2
+tie_highlight.draw(Bar)
+
+#Small shirt buttons
+for y in (315, 350, 385, 420):
+    button = Circle(Point(400, y), 3)
+    button.fill_colour = "#9A9A9A"
+    button.outline_colour = "#777777"
+    button.draw(Bar)
 
 #Palms
 left_palm = Oval(Point(132, 472), Point(188, 520))
@@ -165,4 +293,27 @@ right_thumb = Oval(Point(598, 487), Point(622, 516))
 right_thumb.fill_colour = skin
 right_thumb.outline_colour = skin
 right_thumb.draw(Bar)
-Bar.get_mouse()
+
+#Hand details
+for start, end in [
+    (Point(145, 494), Point(168, 499)),
+    (Point(655, 494), Point(632, 499)),
+]:
+    crease = Line(start, end)
+    crease.fill_colour = "#C9875F"
+    crease.outline_width = 2
+    crease.draw(Bar)
+
+for x, y in [
+    (137, 536), (150, 544), (163, 544), (176, 536),
+    (663, 536), (650, 544), (637, 544), (624, 536),
+]:
+    nail = Oval(Point(x - 3, y - 2), Point(x + 3, y + 2))
+    nail.fill_colour = "#F2C19C"
+    nail.outline_colour = "#F2C19C"
+    nail.draw(Bar)
+
+
+if __name__ == "__main__":
+    bartender()
+    Bar.close()
