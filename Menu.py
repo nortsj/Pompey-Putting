@@ -1,4 +1,8 @@
-from graphix import *
+"""
+Menu.py - the title screen.  main_menu() returns when PLAY is clicked.
+"""
+
+from graphix import Window, Circle, Line, Rectangle, Text, Point
 
 #Main
 def main_menu():
@@ -69,3 +73,7 @@ def main_menu():
         if 250 <= click.x <= 550 and 480 <= click.y <= 560:
             Main.close()
             break
+
+
+if __name__ == "__main__":
+    main_menu()
