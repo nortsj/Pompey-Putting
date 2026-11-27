@@ -2,10 +2,10 @@
 
 Ever wanted to play mini golf while mildly inebriated? 
 
-Ever wanted to struggle to get the ball into the hole as your stoke count climbs?
+Ever wanted to struggle to get the ball into the hole as your stroke count climbs?
 
-Well now you can with _pompey putting_!
+Enter _Pompey Putting_!
 
-Choose between 1 and 3 drinks every 2 holes and try your hardest to get around the 12 hole course! Choose wisely how much you drink, more drinks means more score but a harder game!
+Take on a 12-hole pub mini golf course; choose wisely how much you drink, more drinks means a higher score but a harder game!
 
-Download the repo and run runtime.py to play!
+Download the repo and run Runtime.py to play!
