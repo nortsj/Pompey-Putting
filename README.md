@@ -1,20 +1,9 @@
 # Pompey-Putting
 
-MODIFIER IDEAS
+Ever wanted to play mini golf while mildly inebriated? 
 
-+
-- Arrows stay and become collision
-- The arrow spins faster
+Ever wanted to struggle to get the ball into the hole as your stoke count climbs?
 
-_
-- Turns ball into a lemon
-- Fireball
+Well now you can with _pompey putting_!
 
-
-Next steps
--Bar to display 3 drinks randomly after a hole
--Drink name to list, then when starting a level it goes through the list and adds all the effects
--Needs a separate drink effects.py then load that into runtime.py
--More levels, add effects
--Win screen
--Way to convert strokes into a score
+Choose between 1 and 3 drinks every 2 holes and try your hardest to get around the 12 hole course! Choose wisely how much you drink, more drinks means more score but a harder game!
