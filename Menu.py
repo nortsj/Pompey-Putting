@@ -59,6 +59,7 @@ def main_menu():
     playBut.draw(Main)
 
     playText = Text(Point(400, 520), "PLAY")
+    playText.typeface = "courier"
     playText.size = 24
     playText.style = "bold"
     playText.text_colour = "white"

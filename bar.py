@@ -85,7 +85,7 @@ def _draw_bar_art(Bar):
     body.outline_colour = torso
     body.draw(Bar)
 
-    #Jacket shading and sleeve creases add a little depth
+    #Jacket shading
     left_jacket_shadow = Polygon([
         Point(300, 45), Point(318, 55), Point(328, 450), Point(280, 460)
     ])

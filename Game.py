@@ -63,6 +63,7 @@ def draw_hole(point, effects):
 
 def draw_label(point, text, size, colour="white", style="bold"):
     label = Text(point, text)
+    label.typeface = "courier"
     label.text_colour = colour
     label.size = size
     label.style = style
@@ -256,7 +257,91 @@ def aim(ball, hole, effects, hole_home_y):
         update(60)
 
 
+def draw_decor(shape, fill, outline, width=1):
+    shape.fill_colour = fill
+    shape.outline_colour = outline
+    shape.outline_width = width
+    shape.draw(win)
+    shapelist.append(shape)
+
+
+def draw_bottle_shelf(center_x, shelf_y):
+    draw_decor(Rectangle(Point(center_x - 37, shelf_y),
+                         Point(center_x + 37, shelf_y + 6)),
+               "#8C4A2E", "#2E1C21", 2)
+    bottle_colours = ("#A52B32", "#D28A24", "#356C43", "#C34C31")
+    bottle_centres = (center_x - 26, center_x - 9,
+                      center_x + 9, center_x + 26)
+    for bottle_x, colour in zip(bottle_centres, bottle_colours):
+        draw_decor(Rectangle(Point(bottle_x - 4, shelf_y - 22),
+                             Point(bottle_x + 4, shelf_y - 3)),
+                   colour, "#291A1E")
+        draw_decor(Rectangle(Point(bottle_x - 2, shelf_y - 29),
+                             Point(bottle_x + 2, shelf_y - 21)),
+                   colour, "#291A1E")
+        draw_decor(Rectangle(Point(bottle_x - 3, shelf_y - 32),
+                             Point(bottle_x + 3, shelf_y - 28)),
+                   "#E2BF62", "#291A1E")
+
+
+def draw_tap(y):
+    draw_decor(Rectangle(Point(720, y - 8), Point(784, y + 10)),
+               "#7B3E29", "#2A1C20", 2)
+    draw_decor(Rectangle(Point(746, y - 22), Point(761, y + 3)),
+               "#C38D42", "#4A3024", 2)
+    draw_decor(Line(Point(753, y - 20), Point(773, y - 27)),
+               "#D6AE5C", "#D6AE5C", 4)
+    draw_decor(Circle(Point(778, y - 29), 6), "#C22D32", "#E4B45A", 2)
+    draw_decor(Line(Point(753, y + 3), Point(753, y + 17)),
+               "#D6AE5C", "#D6AE5C", 3)
+    draw_decor(Line(Point(747, y + 17), Point(759, y + 17)),
+               "#D6AE5C", "#D6AE5C", 3)
+
+
+def draw_pub_setting():
+    draw_decor(Rectangle(Point(0, 0), Point(800, 600)), "#464751", "#464751")
+    draw_decor(Rectangle(Point(0, 0), Point(800, 140)), "#09166B", "#09166B")
+    draw_decor(Rectangle(Point(0, 140), Point(90, 460)), "#41434D", "#41434D")
+    draw_decor(Rectangle(Point(710, 140), Point(800, 460)), "#41434D", "#41434D")
+    draw_decor(Rectangle(Point(0, 460), Point(800, 600)), "#702532", "#702532")
+    draw_decor(Rectangle(Point(90, 470), Point(710, 598)), "#7F2525", "#C49A5B", 3)
+    draw_decor(Rectangle(Point(100, 480), Point(700, 588)), "#68222B", "#A7794A", 2)
+
+    for y, colour, width in [(128, "#CE4B25", 5), (136, "#E3A642", 2)]:
+        draw_decor(Line(Point(0, y), Point(800, y)), colour, colour, width)
+
+    for x in (150, 250, 550, 650):
+        draw_decor(Line(Point(x, 0), Point(x, 126)), "#18267F", "#18267F", 3)
+
+    for y in (491, 577):
+        draw_decor(Line(Point(112, y), Point(688, y)), "#C49A5B", "#C49A5B", 2)
+
+    for x in range(130, 680, 42):
+        draw_decor(Line(Point(x, 499), Point(x + 9, 490)), "#A7794A", "#A7794A", 2)
+        draw_decor(Line(Point(x, 569), Point(x + 9, 578)), "#A7794A", "#A7794A", 2)
+
+    for shelf_y in (195, 245, 345, 415):
+        draw_bottle_shelf(45, shelf_y)
+
+    for tap_y in (180, 250, 340, 410):
+        draw_tap(tap_y)
+
+
+def draw_bar_rails():
+    for left, right, top, bottom in ((155, 645, 118, 140), (90, 710, 460, 482)):
+        draw_decor(Rectangle(Point(left, top), Point(right, bottom)),
+                   "#85462F", "#35211C", 3)
+        draw_decor(Line(Point(left + 6, top + 4), Point(right - 6, top + 4)),
+                   "#D18B3A", "#D18B3A", 3)
+        draw_decor(Line(Point(left + 6, bottom - 4), Point(right - 6, bottom - 4)),
+                   "#A72E37", "#A72E37", 3)
+        for x in range(left + 24, right - 12, 72):
+            draw_decor(Line(Point(x, top + 8), Point(x, bottom - 8)),
+                       "#A96A43", "#A96A43", 2)
+
+
 def build_course():
+    draw_pub_setting()
     green = Rectangle(Point(LEFT, TOP), Point(RIGHT, BOTTOM))
     green.fill_colour = GREEN
     green.outline_colour = GREEN
@@ -266,15 +351,16 @@ def build_course():
     make_wall(LEFT - WALL, BOTTOM, RIGHT + WALL, BOTTOM + WALL)
     make_wall(LEFT - WALL, TOP, LEFT, BOTTOM)
     make_wall(RIGHT, TOP, RIGHT + WALL, BOTTOM)
+    draw_bar_rails()
 
 
 def play_level(ball_pos, hole_pos, effects):
     global total_strokes, completed_holes
     strokes = 0
-    stroke_counter = draw_label(Point(400, 550), "Strokes: 0", 24)
+    stroke_counter = draw_label(Point(400, 520), "Strokes: 0", 24)
     total_counter = draw_total_counter()
     draw_active_drinks_hud(win, shapelist, effects)
-    draw_label(Point(400, 580), "Press SPACE to shoot", 11, "white", "normal")
+    draw_label(Point(400, 550), "Press SPACE to shoot", 11, "white", "normal")
     draw_label(Point(400, 100), f"HOLE {current_level} / {LEVEL_COUNT}", 18, "gold")
     hole = draw_hole(hole_pos, effects)
     ball = draw_ball(ball_pos, effects)

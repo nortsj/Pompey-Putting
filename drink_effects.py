@@ -37,7 +37,7 @@ DRINK_EFFECTS = {
         "wobble": 0.45,
     },
     "Hooch": {
-        "description": "Lemon Twist: Ball turns into a lemon and rolls lopsidedly!",
+        "description": "Lemon Twist: Ball turns into a lemon and rolls lopsidedly.",
         "ball_shape": "lemon",
         "ball_colour": "gold",
         "lemon_lopsided": True,
@@ -48,7 +48,7 @@ DRINK_EFFECTS = {
         "speed_mult": 1.35,
     },
     "Vodka lemonade": {
-        "description": "Clear Vision: The hole turns invisible (same colour as the green)!",
+        "description": "Clear Vision: The hole turns invisible (same colour as the green).",
         "hole_invisible": True,
     },
     "Vodka and coke": {
@@ -71,11 +71,11 @@ DRINK_EFFECTS = {
         "friction_offset": 0.008,
     },
     "Prosecco": {
-        "description": "Hyper Fizz: Aiming arrow spins at double speed!",
+        "description": "Hyper Fizz: Aiming arrow spins at double speed.",
         "arrow_speed_mult": 2.0,
     },
     "Tequila shot": {
-        "description": "Blackout Teleport: Hole jumps to a random spot after every shot!",
+        "description": "Blackout Teleport: Hole jumps to a random spot after every shot.",
         "hole_move": "teleport",
     },
 }
@@ -86,13 +86,12 @@ DRINK_EFFECTS = {
 # ---------------------------------------------------------------------------
 
 def _sober_state():
-#The effects dictionary with no drinks active
     return {
         "active_drinks": [],
         "descriptions": [],
         "ball_radius_mult": 1.0,
         "ball_shape": "circle",       # "circle" or "lemon"
-        "ball_colour": "grey",
+        "ball_colour": "white",
         "lemon_lopsided": False,
         "speed_mult": 1.0,
         "friction_offset": 0.0,
@@ -107,7 +106,6 @@ def _sober_state():
 
 
 def parse_drinks(chosen_drinks):
-#Combine selected drink names into one effects dictionary.
     if isinstance(chosen_drinks, str):
         drink_list = [d.strip() for d in chosen_drinks.split(",") if d.strip()]
     else:
@@ -165,7 +163,6 @@ def parse_drinks(chosen_drinks):
 
 
 def format_drink_list(names, max_chars=None):
-#Compress repeated names and optionally limit the length.
     counts = {}
     for name in names:
         counts[name] = counts.get(name, 0) + 1
@@ -181,7 +178,6 @@ def format_drink_list(names, max_chars=None):
 # ---------------------------------------------------------------------------
 
 class LemonBall:
-#Ball wrapper used when Hooch turns the ball into a lemon.
     def __init__(self, centre, radius, win, colour="gold"):
         self.radius = radius
         self._centre = Point(centre.x, centre.y)
@@ -222,7 +218,6 @@ class LemonBall:
 
 
 def create_modified_ball(point, win, shapelist, effects, base_radius=10):
-#Draw the ball with its current drink effects.
     radius = max(4, round(base_radius * effects["ball_radius_mult"]))
     if effects["ball_shape"] == "lemon":
         ball = LemonBall(point, radius, win, "gold")      # a lemon is always yellow
@@ -253,7 +248,6 @@ def _distance_to_rect(px, py, rect):
 
 
 def teleport_hole(hole, effects, walls, ball, bounds=(100, 150, 700, 450)):
-#Move the hole to a random clear spot.
     if effects["hole_move"] != "teleport":
         return
 
@@ -275,7 +269,6 @@ def teleport_hole(hole, effects, walls, ball, bounds=(100, 150, 700, 450)):
 
 
 def update_moving_hole(hole, effects, clock, home_y, bounds=(100, 150, 700, 450)):
-#Move the hole up and down around its starting position.
     if effects["hole_move"] != "patrol":
         return
 
@@ -295,12 +288,11 @@ def update_moving_hole(hole, effects, clock, home_y, bounds=(100, 150, 700, 450)
 # ---------------------------------------------------------------------------
 
 def step_aim_angle(angle, frame, base_spin_speed, effects, centre=0):
-#Return the next angle for the aiming arrow.
     mode = effects["arrow_mode"]
     speed = base_spin_speed * effects["arrow_speed_mult"]
 
     if mode == "jitter":
-        # Cider: erratic twitchy jumps
+        #Cider makes the aim jitter.
         return (angle + speed + random.uniform(-6.5, 6.5)) % 360
     elif mode == "pendulum":
         return (centre + 110 * math.sin(frame * 0.02 * speed)) % 360
@@ -309,7 +301,6 @@ def step_aim_angle(angle, frame, base_spin_speed, effects, centre=0):
 
 
 def apply_roll_physics(dx, dy, frame, effects):
-#Apply curve, wobble, and lemon movement to the ball velocity.
     speed = math.hypot(dx, dy)
     if speed == 0:
         return dx, dy
@@ -323,7 +314,7 @@ def apply_roll_physics(dx, dy, frame, effects):
         surge = 1.0 + 0.04 * math.cos(frame * 0.35)
 
     if turn:
-        # rotate the velocity (screen y points down, so + turns right)
+        #Positive rotation turns right in screen coordinates.
         cos_t, sin_t = math.cos(turn), math.sin(turn)
         dx, dy = dx * cos_t - dy * sin_t, dx * sin_t + dy * cos_t
 
@@ -335,12 +326,12 @@ def apply_roll_physics(dx, dy, frame, effects):
 # ---------------------------------------------------------------------------
 
 def draw_active_drinks_hud(win, shapelist, effects):
-#Displays the active drinks at the top of the game window.
     if not effects["active_drinks"]:
         label_text = "Drinks: Sober"
     else:
         label_text = "Drinks: " + format_drink_list(effects["active_drinks"], 70)
     hud = Text(Point(400, 25), label_text)
+    hud.typeface = "courier"
     hud.text_colour = "gold"
     hud.size = 14
     hud.style = "bold"
